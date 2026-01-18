@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Word to PDF</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="container">
+        <h1>Word to PDF Converter</h1>
+        <p class="subtitle">Local, Private, & Fast.</p>
+
+        <div class="upload-zone" id="drop-zone">
+            <div class="icon">📄</div>
+            <p>Drag & Drop your .docx file here</p>
+            <p class="small">or click to browse</p>
+            <input type="file" id="file-input" accept=".docx" hidden>
+        </div>
+
+        <div id="status-container" class="hidden">
+            <div class="status-text" id="status-text">Converting...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <div id="result-container" class="hidden">
+            <p>Conversion Complete!</p>
+            <a id="download-btn" href="#" class="btn" download>Download PDF</a>
+            <div id="warnings" class="warnings hidden"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

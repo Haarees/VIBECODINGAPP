@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Converter</title>
+    <style>
+        :root {
+            --app-bg: #F5F5F7;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --accent-blue: #007AFF;
+            --accent-blue-hover: #0062CC;
+            --success-green: #34C759;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            --anim-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--app-bg);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, hsla(253,16%,7%,0) 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, hsla(225,39%,30%,0) 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, hsla(339,49%,30%,0) 50%);
+            position: relative;
+        }
+
+        /* Abstract ambient background */
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.6;
+            animation: float 10s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(0, 122, 255, 0.2);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(52, 199, 89, 0.15);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        /* Main Glass Card */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--glass-shadow);
+            width: 90%;
+            max-width: 480px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            transition: transform var(--anim-speed) ease, box-shadow var(--anim-speed) ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glass-panel:hover {
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Toggle Switch */
+        .toggle-container {
+            background: rgba(118, 118, 128, 0.12);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            display: flex;
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            border: none;
+            background: none;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            z-index: 2;
+            transition: color var(--anim-speed) ease;
+            border-radius: 8px;
+            font-family: var(--font-stack);
+        }
+
+        .toggle-btn.active {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 3px 1px rgba(0, 0, 0, 0.04);
+            transition: transform var(--anim-speed) cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 1;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            border: 2px dashed rgba(118, 118, 128, 0.2);
+            border-radius: var(--radius-md);
+            padding: 40px 24px;
+            text-align: center;
+            transition: all var(--anim-speed) ease;
+            cursor: pointer;
+            position: relative;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--accent-blue);
+            background: rgba(0, 122, 255, 0.05);
+            transform: scale(1.01);
+        }
+
+        .drop-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            fill: var(--accent-blue);
+            filter: drop-shadow(0 4px 6px rgba(0, 122, 255, 0.2));
+        }
+
+        .drop-text {
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .drop-hint {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* File Input */
+        #file-input {
+            display: none;
+        }
+
+        /* Selected File State */
+        .file-card {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            margin-top: 16px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all var(--anim-speed) ease;
+        }
+
+        .file-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .file-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            background: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .file-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .file-name {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            margin-left: 8px;
+            transition: color 0.2s;
+        }
+
+        .remove-btn:hover {
+            color: #FF3B30;
+        }
+
+        /* Action Button */
+        .action-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--anim-speed) ease;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            width: 100%;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-blue-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+        }
+
+        .action-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+
+        .action-btn:disabled {
+            background: rgba(0, 0, 0, 0.1); /* Fallback */
+            background: rgba(118, 118, 128, 0.12);
+            color: rgba(60, 60, 67, 0.3);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Progress State */
+        .progress-container {
+            margin-top: 16px;
+            display: none;
+            text-align: center;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(118, 118, 128, 0.12);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 12px 0 8px;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.2s linear;
+        }
+
+        .status-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Success State */
+        .success-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 24px 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--success-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 16px rgba(52, 199, 89, 0.3);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .success-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Utility */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+
+    <div class="glass-panel" id="mainPanel">
+        <header>
+            <h1>Converter</h1>
+            <p class="subtitle">Secure, local Word & PDF conversion.</p>
+        </header>
+
+        <div class="toggle-container">
+            <div class="toggle-slider" id="toggleSlider"></div>
+            <button class="toggle-btn active" id="btnWordToPdf" onclick="setMode('word-to-pdf')">Word to PDF</button>
+            <button class="toggle-btn" id="btnPdfToWord" onclick="setMode('pdf-to-word')">PDF to Word</button>
+        </div>
+
+        <div class="drop-zone" id="dropZone">
+            <svg class="drop-icon" viewBox="0 0 24 24">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+            </svg>
+            <div class="drop-text">Drag & Drop files here</div>
+            <div class="drop-hint">or click to browse</div>
+            <input type="file" id="fileInput" accept=".doc,.docx,.pdf">
+        </div>
+
+        <div class="file-card" id="fileCard">
+            <div class="file-icon" id="fileIconType">DOCX</div>
+            <div class="file-info">
+                <div class="file-name" id="fileName">document.docx</div>
+                <div class="file-size" id="fileSize">2.4 MB</div>
+            </div>
+            <button class="remove-btn" id="removeFile">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </button>
+        </div>
+
+        <button class="action-btn" id="convertBtn" disabled>Convert File</button>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="status-text" id="statusText">Preparing...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="success-state" id="successState">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+            </div>
+            <h3>Conversion Complete</h3>
+            <p class="subtitle" style="margin-top: 8px;">Your file is ready.</p>
+            <button class="action-btn" style="margin-top: 24px;" onclick="resetUI()">Convert Another</button>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentMode = 'word-to-pdf';
+        let currentFile = null;
+        let isConverting = false;
+
+        // Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileCard = document.getElementById('fileCard');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileIconType = document.getElementById('fileIconType');
+        const removeFileBtn = document.getElementById('removeFile');
+        const convertBtn = document.getElementById('convertBtn');
+        const slider = document.getElementById('toggleSlider');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const statusText = document.getElementById('statusText');
+        const successState = document.getElementById('successState');
+        const mainPanel = document.getElementById('mainPanel');
+
+        // Mode Switching
+        function setMode(mode) {
+            if (isConverting) return;
+            currentMode = mode;
+            const isWordToPdf = mode === 'word-to-pdf';
+            
+            document.getElementById('btnWordToPdf').classList.toggle('active', isWordToPdf);
+            document.getElementById('btnPdfToWord').classList.toggle('active', !isWordToPdf);
+            
+            slider.style.transform = isWordToPdf ? 'translateX(0)' : 'translateX(100%)';
+            
+            fileInput.accept = isWordToPdf ? '.doc,.docx' : '.pdf';
+            
+            // Reset if existing file doesn't match new mode
+            if (currentFile) {
+                const ext = currentFile.name.split('.').pop().toLowerCase();
+                const valid = isWordToPdf ? ['doc', 'docx'].includes(ext) : ext === 'pdf';
+                if (!valid) clearFile();
+            }
+        }
+
+        // File Handling
+        function handleFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            const isWordToPdf = currentMode === 'word-to-pdf';
+            const valid = isWordToPdf ? ['doc', 'docx'].includes(ext) : ext === 'pdf';
+
+            if (!valid) {
+                 // Creating a temporary error shake effect
+                 dropZone.style.borderColor = '#FF3B30';
+                 setTimeout(() => dropZone.style.borderColor = '', 500);
+                 return;
+            }
+
+            currentFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatSize(file.size);
+            fileIconType.textContent = ext.toUpperCase();
+            
+            fileCard.classList.add('visible');
+            dropZone.classList.add('hidden');
+            convertBtn.disabled = false;
+        }
+
+        function clearFile() {
+            currentFile = null;
+            fileInput.value = '';
+            fileCard.classList.remove('visible');
+            setTimeout(() => {
+                dropZone.classList.remove('hidden');
+            }, 300);
+            convertBtn.disabled = true;
+        }
+
+        function formatSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // Drag & Drop
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            if (dt.files.length) handleFile(dt.files[0]);
+        });
+
+        removeFileBtn.addEventListener('click', clearFile);
+
+        // Conversion Simulation
+        convertBtn.addEventListener('click', () => {
+            if (!currentFile) return;
+            isConverting = true;
+            
+            // UI Transition
+            dropZone.classList.add('hidden');
+            fileCard.classList.add('hidden');
+            convertBtn.classList.add('hidden');
+            document.querySelector('.toggle-container').classList.add('hidden');
+            document.querySelector('header').classList.add('hidden');
+            
+            progressContainer.style.display = 'block';
+            
+            // Simulate Progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+                
+                progressFill.style.width = `${progress}%`;
+                
+                if (progress < 30) statusText.textContent = "Uploading...";
+                else if (progress < 70) statusText.textContent = "Converting with LibreOffice...";
+                else if (progress < 100) statusText.textContent = "Finalizing...";
+                
+                if (progress === 100) {
+                    clearInterval(interval);
+                    setTimeout(showSuccess, 500);
+                }
+            }, 500);
+        });
+
+        function showSuccess() {
+            progressContainer.style.display = 'none';
+            successState.style.display = 'flex';
+        }
+
+        function resetUI() {
+            isConverting = false;
+            currentFile = null;
+            fileInput.value = '';
+            
+            successState.style.display = 'none';
+            document.querySelector('header').classList.remove('hidden');
+            document.querySelector('.toggle-container').classList.remove('hidden');
+            dropZone.classList.remove('hidden');
+            fileCard.classList.remove('visible');
+            convertBtn.classList.remove('hidden');
+            convertBtn.disabled = true;
+            progressFill.style.width = '0%';
+        }
+    </script>
+</body>
+</html>

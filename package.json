@@ -1,0 +1,12 @@
+{
+    "name": "vibecodingapp",
+    "version": "1.0.0",
+    "description": "Word <-> PDF conversion using LibreOffice",
+    "main": "src/converter.js",
+    "scripts": {
+        "test": "node examples/demo.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}
